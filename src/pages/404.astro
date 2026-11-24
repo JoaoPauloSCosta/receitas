@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+---
+
+<BaseLayout
+  title="Página não encontrada | Minha Receita"
+  description="A página ou receita procurada não foi encontrada."
+>
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6 py-12">
+    <EmptyState
+      title="Receita ou página não encontrada (404)"
+      description="O endereço pode ter mudado ou o arquivo .md correspondente ainda não foi adicionado na pasta receitas/."
+      ctaLabel="Voltar para o início"
+      ctaHref="/"
+      secondaryLabel="Ver todas as receitas"
+      secondaryHref="/receitas"
+    />
+  </div>
+</BaseLayout>

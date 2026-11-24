@@ -1,0 +1,122 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { OFFICIAL_CATEGORIES, type CategoryInfo } from '../../lib/categories';
+import { getAllCategoriesWithCounts, getAllRecipes } from '../../lib/recipes';
+
+export const getStaticPaths = (async () => {
+  const allRecipes = await getAllRecipes();
+  const categories = await getAllCategoriesWithCounts(allRecipes);
+
+  return categories.map((cat) => ({
+    params: { slug: cat.slug },
+    props: {
+      category: cat,
+      recipes: allRecipes.filter((r) => r.categoria.slug === cat.slug),
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  category: CategoryInfo & { count: number };
+  recipes: Awaited<ReturnType<typeof getAllRecipes>>;
+}
+
+const { category, recipes } = Astro.props;
+---
+
+<BaseLayout
+  title={`${category.label} | Minha Receita`}
+  description={category.description}
+>
+  <!-- Hero Temático da Categoria -->
+  <section class="relative min-h-[260px] sm:min-h-[300px] bg-[#1F1F1F] overflow-hidden mr-surface-dark flex items-end">
+    <img
+      src={category.bannerImage}
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover"
+    />
+    <div class="absolute inset-0" style="background: var(--mr-overlay-hero);" aria-hidden="true"></div>
+
+    <div class="relative z-[10] max-w-[1024px] w-full mx-auto px-4 sm:px-6 pb-8 pt-6">
+      <Breadcrumb
+        tone="dark"
+        items={[
+          { label: 'Início', href: '/' },
+          { label: 'Receitas', href: '/receitas' },
+          { label: category.label },
+        ]}
+      />
+
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <span
+          class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide text-white shadow-sm"
+          style={`background-color: var(${category.cssVarAA})`}
+        >
+          Categoria
+        </span>
+        <span class="text-xs font-semibold text-white/90">
+          {recipes.length} {recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}
+        </span>
+      </div>
+
+      <h1 class="text-[28px] leading-[34px] sm:text-[36px] sm:leading-[42px] font-bold text-white mt-3 mb-2">
+        {category.label}
+      </h1>
+      <p class="text-sm sm:text-base leading-6 text-white/90 max-w-[640px] m-0">
+        {category.description}
+      </p>
+    </div>
+  </section>
+
+  <!-- Faixa de Troca Rápida entre Categorias -->
+  <div class="bg-[#FAF5F3] border-b border-[#FAA96B]/40">
+    <div class="max-w-[1024px] mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 overflow-x-auto mr-warm-scroll">
+      <a
+        href="/receitas"
+        class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-[#374151] border border-[#E5E7EB] hover:border-[#B03D1F] hover:text-[#B03D1F] no-underline transition-colors"
+      >
+        Todas
+      </a>
+      {OFFICIAL_CATEGORIES.map((cat) => {
+        const isCurrent = cat.slug === category.slug;
+        return (
+          <a
+            href={`/categoria/${cat.slug}`}
+            class:list={[
+              'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold no-underline transition-transform hover:scale-105',
+              isCurrent ? 'text-white shadow-sm' : 'bg-white text-[#3F3E3D] border border-[#E5E7EB]',
+            ]}
+            style={isCurrent ? `background-color: var(${cat.cssVarAA})` : undefined}
+            aria-current={isCurrent ? 'page' : undefined}
+          >
+            {cat.label}
+          </a>
+        );
+      })}
+    </div>
+  </div>
+
+  <!-- Grid de Receitas da Categoria -->
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6 pt-8">
+    {recipes.length > 0 ? (
+      <div class="receitas-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {recipes.map((recipe) => (
+          <RecipeCard recipe={recipe} />
+        ))}
+      </div>
+    ) : (
+      <EmptyState
+        title={`Nenhuma receita em "${category.label}" ainda`}
+        description="Que tal estrear esta categoria criando um novo arquivo .md na pasta receitas/?"
+        ctaLabel="Criar receita nesta categoria"
+        ctaHref={`/nova-receita?categoria=${encodeURIComponent(category.slug)}`}
+        secondaryLabel="Ver todas as receitas"
+        secondaryHref="/receitas"
+      />
+    )}
+  </div>
+</BaseLayout>

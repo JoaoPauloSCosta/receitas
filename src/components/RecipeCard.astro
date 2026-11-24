@@ -1,0 +1,55 @@
+---
+import type { NormalizedRecipe } from '../lib/recipes';
+import FavoriteButton from './FavoriteButton.astro';
+
+interface Props {
+  recipe: NormalizedRecipe;
+  className?: string;
+}
+
+const { recipe, className = '' } = Astro.props;
+const metaText = recipe.metaItems.join(' • ');
+---
+
+<article
+  class:list={[
+    'small-card receita-item flex flex-col rounded-lg bg-white group',
+    className,
+  ]}
+>
+  <div class="relative rounded-lg overflow-hidden aspect-[3/2] bg-[#F3F4F6]">
+    <a href={`/receita/${recipe.id}`} class="block w-full h-full">
+      <img
+        src={recipe.imagem}
+        alt={recipe.imagemAlt}
+        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+        loading="lazy"
+      />
+    </a>
+    <FavoriteButton
+      recipe={recipe}
+      className="absolute top-3 right-3 z-[10]"
+    />
+  </div>
+
+  <div class="py-4 flex-1 flex flex-col">
+    <a
+      href={`/categoria/${recipe.categoria.slug}`}
+      class="inline-block w-fit text-xs leading-4 font-bold uppercase tracking-[0.025em] text-[#B03D1F] hover:text-[#963218] transition-colors no-underline"
+    >
+      {recipe.categoria.label}
+    </a>
+
+    <h3 class="recipe-title mt-1.5 mb-0 text-[18px] leading-7 font-bold text-[#666666] group-hover:text-[#1F1F1F] transition-colors line-clamp-3">
+      <a href={`/receita/${recipe.id}`} class="text-inherit no-underline">
+        {recipe.titulo}
+      </a>
+    </h3>
+
+    {metaText && (
+      <div class="recipe-meta mt-auto pt-3 border-t border-[#F3F4F6] text-xs leading-4 font-bold text-[#6B7280]">
+        {metaText}
+      </div>
+    )}
+  </div>
+</article>

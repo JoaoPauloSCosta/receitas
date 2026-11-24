@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroCarousel from '../components/HeroCarousel.astro';
+import FeaturedRecipeCard from '../components/FeaturedRecipeCard.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import CategoryPillGrid from '../components/CategoryPillGrid.astro';
+import { getAllCategoriesWithCounts, getAllRecipes } from '../lib/recipes';
+
+const allRecipes = await getAllRecipes();
+const categories = await getAllCategoriesWithCounts(allRecipes);
+
+const featuredPool = allRecipes.filter((r) => r.destaque);
+const heroRecipes = (featuredPool.length >= 3 ? featuredPool : allRecipes).slice(0, 3);
+
+const mainFeatured = featuredPool[0] ?? allRecipes[0];
+const gridRecipes = allRecipes.filter((r) => r.id !== mainFeatured?.id).slice(0, 4);
+
+const quickRecipes = allRecipes
+  .filter((r) => (r.tempoMinutos ?? 999) <= 45)
+  .slice(0, 3);
+---
+
+<BaseLayout
+  title="Minha Receita — Caderno de Receitas em Astro & Markdown"
+  description="Descubra receitas testadas, organize suas favoritas e adicione novos pratos salvando arquivos .md na pasta receitas/."
+>
+  <HeroCarousel recipes={heroRecipes} />
+
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6">
+    <!-- Seção Principal de Receitas -->
+    <section class="pt-10 sm:pt-12" aria-labelledby="titulo-principal-home">
+      <h1 id="titulo-principal-home" class="mr-display-h1 text-center mb-8">
+        Receitas para Cada Momento
+      </h1>
+
+      {allRecipes.length > 0 && (
+        <div class="featured-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {mainFeatured && (
+            <FeaturedRecipeCard
+              recipe={mainFeatured}
+              className="md:col-span-2"
+            />
+          )}
+          {gridRecipes.map((recipe) => (
+            <RecipeCard recipe={recipe} />
+          ))}
+        </div>
+      )}
+
+      <div class="text-center mt-8">
+        <a href="/receitas" class="mr-btn-pill">
+          Todas as receitas ({allRecipes.length})
+        </a>
+      </div>
+    </section>
+
+    <!-- Seção de Categorias -->
+    <section class="mt-14 sm:mt-16" aria-labelledby="titulo-categorias-home">
+      <div class="flex flex-wrap items-baseline justify-between gap-4 mb-6">
+        <h2 id="titulo-categorias-home" class="mr-section-title m-0">
+          Navegue por categoria
+        </h2>
+        <a
+          href="/receitas"
+          class="text-sm font-bold text-[#B03D1F] hover:text-[#963218] underline underline-offset-4"
+        >
+          Ver catálogo completo
+        </a>
+      </div>
+
+      <CategoryPillGrid categories={categories.slice(0, 9)} />
+    </section>
+
+    <!-- Seção Prontas em até 45 min -->
+    {quickRecipes.length > 0 && (
+      <section class="mt-14 sm:mt-16" aria-labelledby="titulo-rapidas-home">
+        <div class="flex flex-wrap items-baseline justify-between gap-4 mb-6">
+          <h2 id="titulo-rapidas-home" class="mr-section-title m-0">
+            Prontas em até 45 minutos
+          </h2>
+          <a
+            href="/receitas"
+            class="text-sm font-bold text-[#B03D1F] hover:text-[#963218] underline underline-offset-4"
+          >
+            Filtrar por tempo
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {quickRecipes.map((recipe) => (
+            <RecipeCard recipe={recipe} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Bloco Editorial: Receitas em Markdown + Antigravity -->
+    <section
+      class="mt-14 sm:mt-16 rounded-2xl bg-[#FAF5F3] border border-[#FAA96B]/50 p-6 sm:p-10"
+      aria-labelledby="titulo-markdown-workflow"
+    >
+      <div class="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 items-center">
+        <div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-[#B03D1F] text-white text-xs font-bold uppercase tracking-wide mb-3">
+            Sem Banco de Dados
+          </span>
+          <h2 id="titulo-markdown-workflow" class="mr-section-title m-0 mb-3">
+            Crie novas receitas em Markdown ou pelo chat
+          </h2>
+          <p class="text-base leading-6 text-[#503C3C] mb-5">
+            Cada receita deste aplicativo é um arquivo <code class="px-1.5 py-0.5 rounded bg-white border border-[#E5E7EB] text-sm font-mono text-[#1F1F1F]">.md</code> dentro da pasta <code class="px-1.5 py-0.5 rounded bg-white border border-[#E5E7EB] text-sm font-mono text-[#1F1F1F]">receitas/</code>. Você pode escrever seus próprios arquivos manualmente, usar o gerador visual integrado ou pedir diretamente ao Antigravity pelo chat.
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="/nova-receita" class="mr-btn-pill">
+              Criar nova receita (.md)
+            </a>
+            <a href="/favoritas" class="mr-btn-pill mr-btn-pill--outline">
+              Minhas favoritas
+            </a>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-[#1F1F1F] text-white p-5 font-mono text-xs leading-5 overflow-x-auto shadow-md">
+          <div class="text-[#FDDA25] font-bold mb-2">receitas/risoto-de-limao.md</div>
+          <pre class="m-0 text-white/90 whitespace-pre-wrap"><code>---
+titulo: "Risoto de Limão Siciliano"
+categoria: "vegetal"
+porcoes: "4 porções"
+tempoPreparo: "30 min"
+dificuldade: "Fácil"
+---
+
+## Ingredientes
+- 300 g de arroz arbóreo
+- Raspas e suco de 1 limão
+
+## Modo de preparo
+1. Refogue o arroz e adicione o caldo aos poucos.</code></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

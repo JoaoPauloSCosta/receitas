@@ -1,0 +1,205 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { OFFICIAL_CATEGORIES } from '../lib/categories';
+---
+
+<BaseLayout
+  title="Buscar Receitas | Minha Receita"
+  description="Pesquise receitas por título, categoria, tag ou ingrediente na coleção Markdown."
+>
+  <section
+    class="py-8 sm:py-10 text-white mr-surface-dark"
+    style="background: var(--mr-gradient-search-banner);"
+  >
+    <div class="max-w-[1024px] mx-auto px-4 sm:px-6">
+      <Breadcrumb
+        tone="dark"
+        items={[
+          { label: 'Início', href: '/' },
+          { label: 'Buscar Receitas' },
+        ]}
+      />
+
+      <h1 class="text-[24px] leading-[32px] sm:text-[32px] sm:leading-[38px] font-bold text-white mt-2 mb-4" id="mr-search-heading">
+        Buscar Receitas
+      </h1>
+
+      <form id="mr-page-search-form" class="max-w-[640px] flex flex-col sm:flex-row gap-3" role="search">
+        <label for="mr-page-search-input" class="sr-only">Termo de busca</label>
+        <input
+          id="mr-page-search-input"
+          name="q"
+          type="search"
+          placeholder="Ex.: frango, picanha, chocolate, cogumelos..."
+          class="flex-1 h-12 rounded-lg bg-white px-4 text-base font-medium text-[#1F1F1F] placeholder:text-[#6B7280] border-0 shadow-sm"
+        />
+        <button type="submit" class="mr-btn-pill h-12 px-6 shrink-0">
+          Buscar
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6 pt-8">
+    <p id="mr-search-status" class="text-sm font-semibold text-[#666666] mb-6"></p>
+
+    <div id="mr-search-skeletons" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-hidden="true">
+      {[1, 2, 3].map(() => (
+        <div class="flex flex-col">
+          <div class="mr-skeleton w-full aspect-[3/2] rounded-lg"></div>
+          <div class="mr-skeleton w-20 h-3 rounded mt-4"></div>
+          <div class="mr-skeleton w-full h-[18px] rounded mt-2"></div>
+          <div class="mr-skeleton w-3/4 h-[18px] rounded mt-2"></div>
+        </div>
+      ))}
+    </div>
+
+    <div id="mr-search-grid" class="hidden receitas-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div id="mr-search-empty" class="hidden">
+      <div class="max-w-[480px] mx-auto py-12 px-6 text-center">
+        <div class="w-20 h-20 rounded-full bg-[#FAF5F3] mx-auto flex items-center justify-center mb-5 border border-[#FAA96B]/40">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="text-[#CE5032]">
+            <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M8.5 11h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <p class="text-[20px] leading-7 font-bold text-[#1F1F1F] mb-2" id="mr-search-empty-title">
+          Nenhum resultado encontrado
+        </p>
+        <p class="text-sm leading-5 text-[#666666] mb-6">
+          Tente buscar outro ingrediente ou peça uma nova receita no chat do Antigravity para adicioná-la na pasta <code class="font-mono text-[#1F1F1F]">receitas/</code>.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="/receitas" class="mr-btn-pill">Explorar todas as receitas</a>
+          <a href="/nova-receita" class="mr-btn-pill mr-btn-pill--outline">Criar receita (.md)</a>
+        </div>
+        <div class="mt-8 pt-6 border-t border-[#E5E7EB]">
+          <p class="text-xs font-bold uppercase tracking-wide text-[#6B7280] mb-3">
+            Categorias populares
+          </p>
+          <div class="flex flex-wrap justify-center gap-2">
+            {OFFICIAL_CATEGORIES.slice(0, 6).map((cat) => (
+              <a
+                href={`/categoria/${cat.slug}`}
+                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-white no-underline hover:scale-105 transition-transform"
+                style={`background-color: var(${cat.cssVarAA})`}
+              >
+                {cat.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { syncFavoriteUI } from '../scripts/favorites';
+  import { loadSearchRecipes, searchRecipes, type SearchRecipeItem } from '../scripts/search';
+
+  const form = document.getElementById('mr-page-search-form') as HTMLFormElement | null;
+  const input = document.getElementById('mr-page-search-input') as HTMLInputElement | null;
+  const heading = document.getElementById('mr-search-heading');
+  const statusEl = document.getElementById('mr-search-status');
+  const skeletons = document.getElementById('mr-search-skeletons');
+  const grid = document.getElementById('mr-search-grid');
+  const emptyWrap = document.getElementById('mr-search-empty');
+  const emptyTitle = document.getElementById('mr-search-empty-title');
+
+  const escapeHtml = (str: string) =>
+    str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const renderCard = (recipe: SearchRecipeItem) => {
+    const meta = [recipe.porcoes, recipe.tempoPreparo].filter(Boolean).join(' • ');
+    return `
+      <article class="small-card receita-item flex flex-col rounded-lg bg-white group">
+        <div class="relative rounded-lg overflow-hidden aspect-[3/2] bg-[#F3F4F6]">
+          <a href="${escapeHtml(recipe.url)}" class="block w-full h-full">
+            <img src="${escapeHtml(recipe.imagem)}" alt="${escapeHtml(recipe.titulo)}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
+          </a>
+          <button
+            type="button"
+            class="emr-favorite-btn absolute top-3 right-3 z-[10]"
+            data-recipe-id="${escapeHtml(recipe.id)}"
+            data-recipe-title="${escapeHtml(recipe.titulo)}"
+            aria-pressed="false"
+            aria-label="Favoritar ${escapeHtml(recipe.titulo)}"
+          >
+            <svg width="25" height="25" viewBox="0 0 512 512" fill="none" aria-hidden="true">
+              <path class="mr-heart-path" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z" />
+            </svg>
+          </button>
+        </div>
+        <div class="py-4 flex-1 flex flex-col">
+          <a href="/categoria/${escapeHtml(recipe.categoriaSlug)}" class="inline-block w-fit text-xs leading-4 font-bold uppercase tracking-[0.025em] text-[#B03D1F] hover:text-[#963218] transition-colors no-underline">
+            ${escapeHtml(recipe.categoriaLabel)}
+          </a>
+          <h3 class="recipe-title mt-1.5 mb-0 text-[18px] leading-7 font-bold text-[#666666] group-hover:text-[#1F1F1F] transition-colors line-clamp-3">
+            <a href="${escapeHtml(recipe.url)}" class="text-inherit no-underline">${escapeHtml(recipe.titulo)}</a>
+          </h3>
+          ${meta ? `<div class="recipe-meta mt-auto pt-3 border-t border-[#F3F4F6] text-xs leading-4 font-bold text-[#6B7280]">${escapeHtml(meta)}</div>` : ''}
+        </div>
+      </article>
+    `;
+  };
+
+  const runSearch = async (rawQuery: string) => {
+    const q = rawQuery.trim();
+    if (input && input.value !== q) input.value = q;
+
+    const all = await loadSearchRecipes();
+    skeletons?.classList.add('hidden');
+
+    if (!q) {
+      if (heading) heading.textContent = 'Buscar Receitas';
+      if (statusEl) statusEl.textContent = `Exibindo todas as ${all.length} receitas disponíveis na pasta receitas/.`;
+      emptyWrap?.classList.add('hidden');
+      if (grid) {
+        grid.innerHTML = all.map(renderCard).join('');
+        grid.classList.remove('hidden');
+        syncFavoriteUI();
+      }
+      return;
+    }
+
+    if (heading) heading.textContent = `Resultados para: "${q}"`;
+    const matches = searchRecipes(all, q);
+
+    if (matches.length === 0) {
+      grid?.classList.add('hidden');
+      emptyWrap?.classList.remove('hidden');
+      if (statusEl) statusEl.textContent = '';
+      if (emptyTitle) emptyTitle.textContent = `Nenhum resultado encontrado para "${q}"`;
+      return;
+    }
+
+    emptyWrap?.classList.add('hidden');
+    if (statusEl) {
+      statusEl.textContent = `${matches.length} ${matches.length === 1 ? 'receita encontrada' : 'receitas encontradas'} para "${q}".`;
+    }
+    if (grid) {
+      grid.innerHTML = matches.map(renderCard).join('');
+      grid.classList.remove('hidden');
+      syncFavoriteUI();
+    }
+  };
+
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialQuery = initialParams.get('q') ?? '';
+  void runSearch(initialQuery);
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = input?.value.trim() ?? '';
+    const nextUrl = q ? `/busca?q=${encodeURIComponent(q)}` : '/busca';
+    window.history.replaceState({}, '', nextUrl);
+    void runSearch(q);
+  });
+</script>

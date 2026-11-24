@@ -1,0 +1,527 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { OFFICIAL_CATEGORIES } from '../lib/categories';
+
+const promptExamples = [
+  {
+    title: 'Receita rápida do dia a dia',
+    text: 'Crie uma nova receita em receitas/ de Strogonoff Cremoso de Frango na categoria aves, para 4 porções, tempo de preparo 30 min e dificuldade Fácil.',
+  },
+  {
+    title: 'Receita 100% Vegetal',
+    text: 'Adicione um arquivo .md na pasta receitas/ para Moqueca de Banana-da-Terra na categoria vegetal, com ingredientes detalhados e dicas do chef.',
+  },
+  {
+    title: 'Sobremesa de fim de semana',
+    text: 'Crie na pasta receitas/ uma receita de Pudim de Leite Condensado Tradicional na categoria doces-bolos-e-sobremesas com tempo de preparo de 1h 15min.',
+  },
+];
+---
+
+<BaseLayout
+  title="Nova Receita (.md) | Minha Receita"
+  description="Gere arquivos .md prontos para salvar na pasta receitas/ manualmente ou aprenda como pedir novas receitas pelo chat do Antigravity."
+>
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6 pt-4">
+    <Breadcrumb
+      items={[
+        { label: 'Início', href: '/' },
+        { label: 'Nova Receita (.md)' },
+      ]}
+    />
+
+    <header class="mt-2 mb-8">
+      <h1 class="mr-display-h1 m-0">Adicionar Nova Receita</h1>
+      <p class="text-base text-[#666666] mt-2 max-w-[700px]">
+        Como este aplicativo funciona sem banco de dados, toda receita é um arquivo <code class="px-1.5 py-0.5 rounded bg-[#FAF5F3] border border-[#FAA96B]/50 font-mono text-sm text-[#1F1F1F]">.md</code> dentro da pasta <code class="px-1.5 py-0.5 rounded bg-[#FAF5F3] border border-[#FAA96B]/50 font-mono text-sm text-[#1F1F1F]">receitas/</code>.
+      </p>
+    </header>
+
+    <!-- Abas -->
+    <div class="flex flex-wrap gap-2 border-b border-[#E5E7EB] mb-8" role="tablist" aria-label="Formas de criar receitas">
+      <button
+        id="tab-btn-builder"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="tab-panel-builder"
+        class="px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-[#B03D1F] text-[#B03D1F] bg-[#FAF5F3] cursor-pointer"
+      >
+        1. Gerador Visual de Arquivo .md
+      </button>
+      <button
+        id="tab-btn-antigravity"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="tab-panel-antigravity"
+        class="px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-transparent text-[#666666] hover:text-[#1F1F1F] bg-transparent cursor-pointer"
+      >
+        2. Criar pelo Chat do Antigravity
+      </button>
+    </div>
+
+    <!-- Painel 1: Construtor Visual de Markdown -->
+    <section id="tab-panel-builder" role="tabpanel" aria-labelledby="tab-btn-builder">
+      <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
+        <form id="mr-md-builder-form" class="bg-white border border-[#E5E7EB] rounded-2xl p-6 grid gap-5" novalidate>
+          <div>
+            <label for="md-titulo" class="mr-label">
+              Título da receita <span class="text-[#8A1F1B]">*</span>
+            </label>
+            <input
+              id="md-titulo"
+              name="titulo"
+              type="text"
+              required
+              placeholder="Ex.: Escondidinho de Carne Seca com Mandioca"
+              aria-describedby="md-titulo-error"
+              class="mr-input"
+            />
+            <p id="md-titulo-error" class="mr-field-error hidden" role="alert">
+              Informe um título com pelo menos 3 caracteres.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="md-categoria" class="mr-label">Categoria</label>
+              <select id="md-categoria" name="categoria" class="mr-select">
+                {OFFICIAL_CATEGORIES.map((cat) => (
+                  <option value={cat.slug}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label for="md-dificuldade" class="mr-label">Dificuldade</label>
+              <select id="md-dificuldade" name="dificuldade" class="mr-select">
+                <option value="Fácil">Fácil</option>
+                <option value="Médio">Médio</option>
+                <option value="Difícil">Difícil</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="md-porcoes" class="mr-label">Rendimento</label>
+              <input
+                id="md-porcoes"
+                name="porcoes"
+                type="text"
+                placeholder="Ex.: 4 a 6 porções"
+                class="mr-input"
+              />
+            </div>
+
+            <div>
+              <label for="md-tempo" class="mr-label">Tempo de preparo</label>
+              <input
+                id="md-tempo"
+                name="tempo"
+                type="text"
+                placeholder="Ex.: 45 min"
+                class="mr-input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="md-resumo" class="mr-label">Resumo curto</label>
+            <input
+              id="md-resumo"
+              name="resumo"
+              type="text"
+              placeholder="Uma frase apetitosa para aparecer nos cards e no hero"
+              class="mr-input"
+            />
+          </div>
+
+          <div>
+            <label for="md-tags" class="mr-label">Tags (separadas por vírgula)</label>
+            <input
+              id="md-tags"
+              name="tags"
+              type="text"
+              placeholder="Ex.: forno, almoço, prático"
+              class="mr-input"
+            />
+          </div>
+
+          <div>
+            <label for="md-ingredientes" class="mr-label">
+              Ingredientes (um por linha) <span class="text-[#8A1F1B]">*</span>
+            </label>
+            <textarea
+              id="md-ingredientes"
+              name="ingredientes"
+              rows="5"
+              required
+              placeholder="500 g de mandioca cozida&#10;300 g de carne seca dessalgada e desfiada&#10;1 cebola picada"
+              aria-describedby="md-ingredientes-error"
+              class="mr-textarea"
+            ></textarea>
+            <p id="md-ingredientes-error" class="mr-field-error hidden" role="alert">
+              Informe pelo menos um ingrediente.
+            </p>
+          </div>
+
+          <div>
+            <label for="md-preparo" class="mr-label">
+              Modo de preparo (um passo por linha) <span class="text-[#8A1F1B]">*</span>
+            </label>
+            <textarea
+              id="md-preparo"
+              name="preparo"
+              rows="5"
+              required
+              placeholder="Amasse a mandioca ainda quente até formar um purê liso.&#10;Refogue a carne seca com a cebola e monte em um refratário.&#10;Leve ao forno a 200 °C por 20 minutos até gratinar."
+              aria-describedby="md-preparo-error"
+              class="mr-textarea"
+            ></textarea>
+            <p id="md-preparo-error" class="mr-field-error hidden" role="alert">
+              Informe pelo menos um passo do modo de preparo.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button type="submit" id="mr-download-md-btn" class="mr-btn-pill">
+              Baixar arquivo .md
+            </button>
+            <button type="button" id="mr-copy-md-btn" class="mr-btn-pill mr-btn-pill--outline">
+              Copiar Markdown
+            </button>
+          </div>
+        </form>
+
+        <!-- Preview ao vivo -->
+        <aside class="lg:sticky lg:top-24 rounded-2xl bg-[#1F1F1F] text-white p-6 shadow-md">
+          <div class="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-white/15">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#FDDA25] block">
+                Pré-visualização do arquivo
+              </span>
+              <code id="mr-preview-filename" class="text-xs font-mono text-white/90">
+                receitas/nova-receita.md
+              </code>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-white/10 text-[11px] font-bold">
+              UTF-8 .md
+            </span>
+          </div>
+
+          <pre
+            id="mr-md-preview"
+            class="m-0 text-xs leading-5 font-mono text-white/90 whitespace-pre-wrap break-words max-h-[540px] overflow-y-auto"
+          ></pre>
+
+          <p class="text-xs text-white/75 mt-4 pt-3 border-t border-white/15 mb-0">
+            Salve o arquivo baixado dentro de <code class="font-mono text-[#FDDA25]">c:\Users\Joao\Desktop\Astro\receitas\</code> e ele aparecerá automaticamente no app!
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Painel 2: Criar pelo Chat do Antigravity -->
+    <section id="tab-panel-antigravity" role="tabpanel" aria-labelledby="tab-btn-antigravity" class="hidden">
+      <div id="antigravity" class="grid gap-8">
+        <div class="bg-[#FAF5F3] border border-[#FAA96B]/50 rounded-2xl p-6 sm:p-8">
+          <h2 class="mr-section-title m-0 mb-3">
+            Como pedir novas receitas diretamente no chat
+          </h2>
+          <p class="text-base text-[#503C3C] mb-6">
+            Você não precisa preencher formulários manualmente se preferir: basta pedir ao Antigravity em linguagem natural. Ele criará o arquivo <code class="px-1.5 py-0.5 rounded bg-white border border-[#E5E7EB] font-mono text-sm">.md</code> dentro da pasta <code class="px-1.5 py-0.5 rounded bg-white border border-[#E5E7EB] font-mono text-sm">receitas/</code> seguindo o schema exato do projeto.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {promptExamples.map((ex) => (
+              <div class="bg-white rounded-xl border border-[#E5E7EB] p-5 flex flex-col justify-between gap-4">
+                <div>
+                  <h3 class="text-base font-bold text-[#1F1F1F] mb-2">{ex.title}</h3>
+                  <p class="text-sm text-[#666666] m-0">"{ex.text}"</p>
+                </div>
+                <button
+                  type="button"
+                  data-copy-prompt={ex.text}
+                  class="mr-btn-pill mr-btn-pill--outline w-full text-xs"
+                >
+                  Copiar prompt
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#E5E7EB] rounded-2xl p-6">
+          <h3 class="text-lg font-bold text-[#1F1F1F] mb-3">
+            Referência rápida dos campos Frontmatter (`receitas/_MODELO.md`)
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-[#E5E7EB] text-[#B03D1F]">
+                  <th class="py-2.5 pr-4 font-bold">Campo</th>
+                  <th class="py-2.5 pr-4 font-bold">Tipo</th>
+                  <th class="py-2.5 font-bold">Exemplo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#F3F4F6] text-[#3F3E3D]">
+                <tr><td class="py-2.5 pr-4 font-mono">titulo</td><td class="py-2.5 pr-4">Obrigatório</td><td class="py-2.5">"Bolo de Fubá Cremoso"</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">categoria</td><td class="py-2.5 pr-4">Slug ou nome</td><td class="py-2.5">"doces-bolos-e-sobremesas"</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">porcoes</td><td class="py-2.5 pr-4">Texto</td><td class="py-2.5">"8 porções"</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">tempoPreparo</td><td class="py-2.5 pr-4">Texto</td><td class="py-2.5">"45 min"</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">dificuldade</td><td class="py-2.5 pr-4">Enum</td><td class="py-2.5">"Fácil" | "Médio" | "Difícil"</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">destaque</td><td class="py-2.5 pr-4">Booleano</td><td class="py-2.5">true / false</td></tr>
+                <tr><td class="py-2.5 pr-4 font-mono">imagem</td><td class="py-2.5 pr-4">Caminho ou URL</td><td class="py-2.5">"/images/receitas/bolo-cenoura-brigadeiro.jpg"</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { showToast } from '../scripts/toast';
+
+  // Tabs
+  const btnBuilder = document.getElementById('tab-btn-builder');
+  const btnAntigravity = document.getElementById('tab-btn-antigravity');
+  const panelBuilder = document.getElementById('tab-panel-builder');
+  const panelAntigravity = document.getElementById('tab-panel-antigravity');
+
+  const activateTab = (tab: 'builder' | 'antigravity') => {
+    const isBuilder = tab === 'builder';
+    btnBuilder?.setAttribute('aria-selected', String(isBuilder));
+    btnAntigravity?.setAttribute('aria-selected', String(!isBuilder));
+    panelBuilder?.classList.toggle('hidden', !isBuilder);
+    panelAntigravity?.classList.toggle('hidden', isBuilder);
+
+    if (btnBuilder && btnAntigravity) {
+      btnBuilder.className = isBuilder
+        ? 'px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-[#B03D1F] text-[#B03D1F] bg-[#FAF5F3] cursor-pointer'
+        : 'px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-transparent text-[#666666] hover:text-[#1F1F1F] bg-transparent cursor-pointer';
+      btnAntigravity.className = !isBuilder
+        ? 'px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-[#B03D1F] text-[#B03D1F] bg-[#FAF5F3] cursor-pointer'
+        : 'px-5 py-3 text-sm font-bold rounded-t-lg border-b-2 border-transparent text-[#666666] hover:text-[#1F1F1F] bg-transparent cursor-pointer';
+    }
+  };
+
+  btnBuilder?.addEventListener('click', () => activateTab('builder'));
+  btnAntigravity?.addEventListener('click', () => activateTab('antigravity'));
+  if (window.location.hash === '#antigravity') {
+    activateTab('antigravity');
+  }
+
+  // Copy prompt buttons
+  document.querySelectorAll<HTMLButtonElement>('[data-copy-prompt]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copyPrompt ?? '';
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast({ type: 'success', message: 'Prompt copiado! Cole no chat do Antigravity.' });
+      } catch {
+        showToast({ type: 'error', message: 'Não foi possível copiar o prompt.' });
+      }
+    });
+  });
+
+  // Markdown Builder
+  const form = document.getElementById('mr-md-builder-form') as HTMLFormElement | null;
+  const tituloInput = document.getElementById('md-titulo') as HTMLInputElement | null;
+  const catInput = document.getElementById('md-categoria') as HTMLSelectElement | null;
+  const difInput = document.getElementById('md-dificuldade') as HTMLSelectElement | null;
+  const porcoesInput = document.getElementById('md-porcoes') as HTMLInputElement | null;
+  const tempoInput = document.getElementById('md-tempo') as HTMLInputElement | null;
+  const resumoInput = document.getElementById('md-resumo') as HTMLInputElement | null;
+  const tagsInput = document.getElementById('md-tags') as HTMLInputElement | null;
+  const ingInput = document.getElementById('md-ingredientes') as HTMLTextAreaElement | null;
+  const prepInput = document.getElementById('md-preparo') as HTMLTextAreaElement | null;
+
+  const previewEl = document.getElementById('mr-md-preview');
+  const filenameEl = document.getElementById('mr-preview-filename');
+
+  const urlCat = new URLSearchParams(window.location.search).get('categoria');
+  if (urlCat && catInput && Array.from(catInput.options).some((o) => o.value === urlCat)) {
+    catInput.value = urlCat;
+  }
+
+  const slugify = (str: string) =>
+    str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'nova-receita';
+
+  const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
+    aves: '/images/receitas/frango-assado-ervas.jpg',
+    'peixes-e-frutos-do-mar': '/images/receitas/moqueca-baiana.jpg',
+    'carne-suina': '/images/receitas/costelinha-barbecue.jpg',
+    bovinos: '/images/receitas/picanha-na-brasa.jpg',
+    cordeiro: '/images/receitas/carre-cordeiro.jpg',
+    'frios-e-embutidos': '/images/receitas/tabua-frios.jpg',
+    vegetal: '/images/receitas/risoto-cogumelos.jpg',
+    'doces-bolos-e-sobremesas': '/images/receitas/bolo-cenoura-brigadeiro.jpg',
+    'paes-e-massas': '/images/receitas/focaccia-tomate-confit.jpg',
+  };
+
+  const escapeYaml = (val: string) => val.replace(/"/g, '\\"').trim();
+
+  const buildMarkdown = () => {
+    const titulo = tituloInput?.value.trim() || 'Minha Nova Receita';
+    const categoria = catInput?.value || 'aves';
+    const dificuldade = difInput?.value || 'Fácil';
+    const porcoes = porcoesInput?.value.trim() || '4 porções';
+    const tempo = tempoInput?.value.trim() || '40 min';
+    const resumo =
+      resumoInput?.value.trim() || 'Receita caseira preparada com ingredientes frescos e modo de preparo prático.';
+    const tags = (tagsInput?.value ?? '')
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    const ingredients = (ingInput?.value ?? '')
+      .split('\n')
+      .map((line) => line.replace(/^[-*]\s*/, '').trim())
+      .filter(Boolean);
+
+    const steps = (prepInput?.value ?? '')
+      .split('\n')
+      .map((line) => line.replace(/^\d+\.\s*/, '').trim())
+      .filter(Boolean);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const defaultImg = CATEGORY_DEFAULT_IMAGES[categoria] ?? '/images/receitas/frango-assado-ervas.jpg';
+
+    const yamlTags =
+      tags.length > 0
+        ? `tags:\n${tags.map((t) => `  - "${escapeYaml(t)}"`).join('\n')}`
+        : `tags:\n  - "caseiro"`;
+
+    const ingBlock =
+      ingredients.length > 0
+        ? ingredients.map((i) => `- ${i}`).join('\n')
+        : '- 1 ingrediente principal';
+
+    const stepBlock =
+      steps.length > 0
+        ? steps.map((s, idx) => `${idx + 1}. ${s}`).join('\n')
+        : '1. Prepare os ingredientes e sirva quente.';
+
+    const filename = `${slugify(titulo)}.md`;
+
+    const markdown = `---
+titulo: "${escapeYaml(titulo)}"
+categoria: "${categoria}"
+resumo: "${escapeYaml(resumo)}"
+imagem: "${defaultImg}"
+imagemAlt: "${escapeYaml(titulo)}"
+porcoes: "${escapeYaml(porcoes)}"
+tempoPreparo: "${escapeYaml(tempo)}"
+dificuldade: "${dificuldade}"
+destaque: false
+publicadoEm: ${today}
+${yamlTags}
+---
+
+## Ingredientes
+
+${ingBlock}
+
+## Modo de preparo
+
+${stepBlock}
+`;
+
+    return { filename, markdown };
+  };
+
+  const updatePreview = () => {
+    const { filename, markdown } = buildMarkdown();
+    if (previewEl) previewEl.textContent = markdown;
+    if (filenameEl) filenameEl.textContent = `receitas/${filename}`;
+  };
+
+  const validateField = (
+    field: HTMLInputElement | HTMLTextAreaElement | null,
+    errorId: string,
+    minLen: number
+  ): boolean => {
+    if (!field) return false;
+    const errEl = document.getElementById(errorId);
+    const valid = field.value.trim().length >= minLen;
+    field.setAttribute('aria-invalid', String(!valid));
+    field.classList.toggle('is-valid', valid);
+    errEl?.classList.toggle('hidden', valid);
+    return valid;
+  };
+
+  const validateAll = (): boolean => {
+    const v1 = validateField(tituloInput, 'md-titulo-error', 3);
+    const v2 = validateField(ingInput, 'md-ingredientes-error', 3);
+    const v3 = validateField(prepInput, 'md-preparo-error', 3);
+    return v1 && v2 && v3;
+  };
+
+  form?.querySelectorAll('input, select, textarea').forEach((el) => {
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
+  });
+
+  tituloInput?.addEventListener('blur', () => validateField(tituloInput, 'md-titulo-error', 3));
+  ingInput?.addEventListener('blur', () => validateField(ingInput, 'md-ingredientes-error', 3));
+  prepInput?.addEventListener('blur', () => validateField(prepInput, 'md-preparo-error', 3));
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validateAll()) {
+      showToast({
+        type: 'error',
+        message: 'Preencha os campos obrigatórios destacados antes de baixar.',
+      });
+      return;
+    }
+
+    const { filename, markdown } = buildMarkdown();
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    showToast({
+      type: 'success',
+      message: `Arquivo "${filename}" baixado! Mova-o para a pasta receitas/.`,
+    });
+  });
+
+  document.getElementById('mr-copy-md-btn')?.addEventListener('click', async () => {
+    if (!validateAll()) {
+      showToast({
+        type: 'warning',
+        message: 'Preencha título, ingredientes e modo de preparo primeiro.',
+      });
+      return;
+    }
+    const { markdown } = buildMarkdown();
+    try {
+      await navigator.clipboard.writeText(markdown);
+      showToast({
+        type: 'success',
+        message: 'Markdown copiado! Cole em um novo arquivo .md na pasta receitas/.',
+      });
+    } catch {
+      showToast({ type: 'error', message: 'Não foi possível copiar o conteúdo.' });
+    }
+  });
+
+  updatePreview();
+</script>

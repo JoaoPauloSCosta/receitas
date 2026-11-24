@@ -1,0 +1,400 @@
+---
+import { OFFICIAL_CATEGORIES } from '../lib/categories';
+
+const currentPath = Astro.url.pathname;
+const isActive = (prefix: string) =>
+  prefix === '/' ? currentPath === '/' : currentPath.startsWith(prefix);
+---
+
+<header
+  id="header"
+  class="mr-header fixed top-0 inset-x-0 h-[68px] lg:h-[72px] bg-[#C73E00] border-b-2 border-[#FF5B0D] z-[30] text-white"
+>
+  <div id="header-inner" class="max-w-[1478px] mx-auto px-4 h-full flex items-center justify-between gap-2 lg:gap-5">
+    <!-- Mobile Hamburger + Logo -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button
+        id="header-hamburguer"
+        type="button"
+        class="lg:hidden inline-flex items-center justify-center w-11 h-11 -ml-2 rounded-lg text-white hover:bg-white/15 transition-colors cursor-pointer"
+        aria-label="Abrir menu de navegação"
+        aria-expanded="false"
+        aria-controls="header-mobile-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 6h16M4 12h16M4 18h16"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+
+      <a
+        href="/"
+        class="inline-flex items-center gap-2.5 py-1.5 rounded-lg text-white no-underline shrink-0"
+        aria-label="Minha Receita — Página Inicial"
+      >
+        <span class="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-sm shrink-0">
+          <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M18 28C18 20.268 24.268 14 32 14C39.732 14 46 20.268 46 28H18Z" fill="#FF8F1C" />
+            <path d="M23 33C23 31.895 23.895 31 25 31H39C40.105 31 41 31.895 41 33V44C41 46.761 38.761 49 36 49H28C25.239 49 23 46.761 23 44V33Z" fill="#CE5032" />
+            <circle cx="32" cy="11" r="4" fill="#FDDA25" />
+          </svg>
+        </span>
+        <span class="flex flex-col leading-none">
+          <span class="text-[17px] sm:text-[19px] font-bold tracking-tight text-white">
+            Minha Receita
+          </span>
+          <span class="text-[11px] font-medium text-white/90 tracking-wide">
+            Caderno em Markdown
+          </span>
+        </span>
+      </a>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav aria-label="Navegação principal" class="hidden lg:flex items-center gap-1 shrink-0">
+      <div class="relative group" id="mr-desktop-categories-wrapper">
+        <button
+          id="mr-desktop-categories-btn"
+          type="button"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-controls="mr-desktop-categories-menu"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/15 transition-colors cursor-pointer"
+        >
+          <span>Categorias</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="transition-transform group-hover:rotate-180">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <div
+          id="mr-desktop-categories-menu"
+          class="main-submenu mr-warm-scroll hidden group-hover:block group-focus-within:block absolute left-0 top-full pt-2 w-[300px] z-[40]"
+        >
+          <div class="bg-[#FAF5F3] rounded-b-lg rounded-tr-lg shadow-lg border border-[#FAA96B]/40 max-h-[500px] overflow-y-auto py-3 px-2">
+            <ul class="list-none m-0 p-0 grid gap-1">
+              {OFFICIAL_CATEGORIES.map((cat) => (
+                <li>
+                  <a
+                    href={`/categoria/${cat.slug}`}
+                    class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-md text-sm font-semibold text-[#3F3E3D] hover:bg-[#C73E00] hover:text-white transition-colors no-underline"
+                  >
+                    <span class="flex items-center gap-2.5 min-w-0">
+                      <span
+                        class="w-2.5 h-2.5 rounded-full shrink-0 border border-white/70"
+                        style={`background-color: var(${cat.cssVarAA})`}
+                        aria-hidden="true"
+                      />
+                      <span class="truncate">{cat.label}</span>
+                    </span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="shrink-0 opacity-75">
+                      <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <a
+        href="/receitas"
+        class:list={[
+          'px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/15 transition-colors no-underline',
+          isActive('/receitas') && 'bg-white/20',
+        ]}
+      >
+        Receitas
+      </a>
+
+      <a
+        href="/nova-receita"
+        class:list={[
+          'px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/15 transition-colors no-underline',
+          isActive('/nova-receita') && 'bg-white/20',
+        ]}
+      >
+        Nova Receita (.md)
+      </a>
+    </nav>
+
+    <!-- Desktop Inline Search -->
+    <div class="hidden lg:block flex-1 max-w-[480px] relative z-[50]">
+      <form id="mr-desktop-search-form" action="/busca" method="get" class="relative" role="search">
+        <label for="emr-input-search" class="sr-only">Buscar receitas por nome, categoria ou ingrediente</label>
+        <input
+          id="emr-input-search"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Buscar receitas, ingredientes..."
+          aria-expanded="false"
+          aria-controls="emr-search-results"
+          class="w-full h-12 bg-[#B03D1F] border-2 border-white rounded-lg pl-4 pr-20 text-sm font-semibold text-white placeholder:text-white/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 transition-all"
+        />
+        <button
+          id="mr-desktop-search-close"
+          type="button"
+          class="close-search hidden absolute right-11 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full inline-flex items-center justify-center text-white hover:bg-white/15 cursor-pointer"
+          aria-label="Limpar busca"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </button>
+        <button
+          type="submit"
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full inline-flex items-center justify-center text-white hover:bg-white/15 cursor-pointer"
+          aria-label="Pesquisar"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2" />
+            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </form>
+
+      <div
+        id="emr-search-results"
+        role="listbox"
+        aria-label="Sugestões de receitas"
+        class="results-list mr-warm-scroll hidden absolute left-0 right-0 top-full mt-2 bg-[#FAF5F3] rounded-b-[19px] rounded-t-[4px] shadow-xl border border-[#FAA96B]/50 max-h-[500px] overflow-y-auto z-[55]"
+      ></div>
+    </div>
+
+    <!-- Right Controls: Mobile Search Pill + Favorites -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button
+        id="header-search-bar"
+        type="button"
+        class="lg:hidden inline-flex items-center justify-center gap-2 h-11 px-3.5 rounded-full border-2 border-white bg-[#B03D1F] text-white text-sm font-semibold cursor-pointer hover:bg-[#963218] transition-colors"
+        aria-label="Abrir busca de receitas"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2" />
+          <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        <span>Buscar</span>
+      </button>
+
+      <a
+        href="/favoritas"
+        class:list={[
+          'relative inline-flex items-center gap-2 min-w-[44px] h-11 px-3 rounded-lg text-white hover:bg-white/15 transition-colors no-underline',
+          isActive('/favoritas') && 'bg-white/20',
+        ]}
+        aria-label="Minhas receitas favoritas"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+          />
+        </svg>
+        <span class="hidden sm:inline text-sm font-semibold">Favoritas</span>
+        <span
+          data-fav-count
+          class="hidden inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#FDDA25] text-[#1F1F1F] text-xs font-bold leading-none"
+        >
+          0
+        </span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Spacer for fixed header -->
+<div class="h-[68px] lg:h-[72px]" aria-hidden="true"></div>
+
+<!-- Desktop Search Backdrop Overlay -->
+<div
+  id="mr-header-search-overlay"
+  class="header-search-overlay hidden fixed inset-0 bg-black/50 z-[25]"
+  aria-hidden="true"
+></div>
+
+<!-- Mobile Drawer Menu (#header-mobile-menu) -->
+<div
+  id="header-mobile-menu"
+  class="hidden fixed inset-0 z-[60] bg-[#FAF5F3] flex-col overflow-hidden lg:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu de navegação mobile"
+>
+  <div class="top-menu h-[56px] bg-[#C73E00] px-4 flex items-center justify-between text-white shrink-0">
+    <span class="text-base font-bold tracking-tight">Minha Receita</span>
+    <button
+      id="mr-mobile-menu-close"
+      type="button"
+      class="close-menu w-11 h-11 -mr-2 inline-flex items-center justify-center rounded-lg text-white hover:bg-white/15 cursor-pointer"
+      aria-label="Fechar menu"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="main-menu-nav bg-[#B03D1F] px-4 py-3 flex items-center gap-3 overflow-x-auto shrink-0">
+    <a href="/" class="text-xs font-bold uppercase tracking-wide text-white whitespace-nowrap px-2.5 py-1.5 rounded-full bg-white/15 no-underline">
+      Início
+    </a>
+    <a href="/receitas" class="text-xs font-bold uppercase tracking-wide text-white whitespace-nowrap px-2.5 py-1.5 rounded-full bg-white/15 no-underline">
+      Receitas
+    </a>
+    <a href="/favoritas" class="text-xs font-bold uppercase tracking-wide text-white whitespace-nowrap px-2.5 py-1.5 rounded-full bg-white/15 no-underline">
+      Favoritas
+    </a>
+    <a href="/nova-receita" class="text-xs font-bold uppercase tracking-wide text-white whitespace-nowrap px-2.5 py-1.5 rounded-full bg-white/15 no-underline">
+      Nova (.md)
+    </a>
+  </div>
+
+  <div class="categories-menu-nav flex-1 overflow-y-auto px-4 py-2">
+    <p class="text-xs font-bold uppercase tracking-wide text-[#6B7280] pt-3 pb-2">
+      Categorias
+    </p>
+    <ul class="list-none m-0 p-0">
+      {OFFICIAL_CATEGORIES.map((cat) => (
+        <li class="border-b border-[#FAA96B]">
+          <a
+            href={`/categoria/${cat.slug}`}
+            class="flex items-center justify-between h-[54px] text-sm font-bold text-[#503C3C] hover:text-[#B03D1F] no-underline"
+          >
+            <span class="flex items-center gap-3">
+              <span
+                class="w-3 h-3 rounded-full shrink-0"
+                style={`background-color: var(${cat.cssVarAA})`}
+                aria-hidden="true"
+              />
+              <span>{cat.label}</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="text-[#B03D1F]">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<!-- Mobile Fullscreen Search Modal -->
+<div
+  id="mr-mobile-search-modal"
+  class="hidden fixed inset-0 z-[70] bg-[#FAF5F3] flex-col lg:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Buscar receitas"
+>
+  <div class="bg-[#C73E00] px-4 py-3 flex items-center gap-2 shrink-0">
+    <form action="/busca" method="get" class="flex-1 flex items-center gap-2" role="search">
+      <label for="mr-mobile-search-input" class="sr-only">Digite o que procura</label>
+      <input
+        id="mr-mobile-search-input"
+        name="q"
+        type="search"
+        autocomplete="off"
+        placeholder="Buscar receitas ou ingredientes..."
+        class="w-full h-11 bg-white text-[#1F1F1F] placeholder:text-[#6B7280] rounded-lg px-3.5 text-base font-medium border-0"
+      />
+    </form>
+    <button
+      id="mr-mobile-search-close"
+      type="button"
+      class="w-11 h-11 inline-flex items-center justify-center rounded-lg text-white hover:bg-white/15 cursor-pointer shrink-0"
+      aria-label="Fechar busca"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+
+  <div id="mr-mobile-search-results" class="flex-1 overflow-y-auto p-3">
+    <p class="text-sm text-[#666666] px-2 py-4">
+      Digite um prato, categoria ou ingrediente para buscar.
+    </p>
+  </div>
+</div>
+
+<script>
+  const hamburger = document.getElementById('header-hamburguer');
+  const drawer = document.getElementById('header-mobile-menu');
+  const closeDrawerBtn = document.getElementById('mr-mobile-menu-close');
+
+  const openDrawer = () => {
+    if (!drawer || !hamburger) return;
+    drawer.classList.remove('hidden');
+    drawer.classList.add('flex');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('overflow-hidden');
+    closeDrawerBtn?.focus();
+  };
+
+  const closeDrawer = () => {
+    if (!drawer || !hamburger) return;
+    drawer.classList.add('hidden');
+    drawer.classList.remove('flex');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('overflow-hidden');
+    hamburger.focus();
+  };
+
+  hamburger?.addEventListener('click', openDrawer);
+  closeDrawerBtn?.addEventListener('click', closeDrawer);
+  drawer?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
+
+  // Desktop category dropdown keyboard toggle
+  const catBtn = document.getElementById('mr-desktop-categories-btn');
+  const catMenu = document.getElementById('mr-desktop-categories-menu');
+  const catWrapper = document.getElementById('mr-desktop-categories-wrapper');
+
+  catBtn?.addEventListener('click', () => {
+    if (!catMenu || !catBtn) return;
+    const isOpen = !catMenu.classList.contains('hidden');
+    catMenu.classList.toggle('hidden', isOpen);
+    catBtn.setAttribute('aria-expanded', String(!isOpen));
+  });
+
+  catWrapper?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && catMenu && catBtn) {
+      catMenu.classList.add('hidden');
+      catBtn.setAttribute('aria-expanded', 'false');
+      catBtn.focus();
+    }
+  });
+</script>
+
+<style>
+  #emr-input-search::-webkit-search-decoration,
+  #emr-input-search::-webkit-search-cancel-button,
+  #emr-input-search::-webkit-search-results-button,
+  #emr-input-search::-webkit-search-results-decoration,
+  #mr-mobile-search-input::-webkit-search-decoration,
+  #mr-mobile-search-input::-webkit-search-cancel-button,
+  #mr-mobile-search-input::-webkit-search-results-button,
+  #mr-mobile-search-input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  #emr-input-search::-ms-clear,
+  #emr-input-search::-ms-reveal,
+  #mr-mobile-search-input::-ms-clear,
+  #mr-mobile-search-input::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+</style>

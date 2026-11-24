@@ -1,0 +1,83 @@
+---
+import { OFFICIAL_CATEGORIES } from '../lib/categories';
+
+interface Props {
+  title: string;
+  description: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+  showQuickCategories?: boolean;
+}
+
+const {
+  title,
+  description,
+  ctaLabel = 'Explorar todas as receitas',
+  ctaHref = '/receitas',
+  secondaryLabel,
+  secondaryHref,
+  showQuickCategories = true,
+} = Astro.props;
+---
+
+<div class="max-w-[480px] mx-auto py-12 px-6 text-center">
+  <div class="w-20 h-20 rounded-full bg-[#FAF5F3] mx-auto flex items-center justify-center mb-5 border border-[#FAA96B]/40">
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      class="text-[#CE5032]"
+    >
+      <path
+        d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M8.5 11h5"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      />
+    </svg>
+  </div>
+
+  <p class="text-[20px] leading-7 font-bold text-[#1F1F1F] mb-2">{title}</p>
+  <p class="text-sm leading-5 text-[#666666] mb-6">{description}</p>
+
+  <div class="flex flex-wrap items-center justify-center gap-3">
+    <a href={ctaHref} class="mr-btn-pill">
+      {ctaLabel}
+    </a>
+    {secondaryLabel && secondaryHref && (
+      <a href={secondaryHref} class="mr-btn-pill mr-btn-pill--outline">
+        {secondaryLabel}
+      </a>
+    )}
+  </div>
+
+  {showQuickCategories && (
+    <div class="mt-8 pt-6 border-t border-[#E5E7EB]">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#6B7280] mb-3">
+        Ou navegue por categoria
+      </p>
+      <div class="flex flex-wrap justify-center gap-2">
+        {OFFICIAL_CATEGORIES.slice(0, 6).map((cat) => (
+          <a
+            href={`/categoria/${cat.slug}`}
+            class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-white transition-transform hover:scale-105 no-underline"
+            style={`background-color: var(${cat.cssVarAA})`}
+          >
+            {cat.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+</div>

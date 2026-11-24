@@ -1,0 +1,147 @@
+---
+import { OFFICIAL_CATEGORIES } from '../lib/categories';
+---
+
+<footer class="mr-footer mt-16 border-t border-[#E5E7EB]">
+  <!-- Faixa Superior Laranja -->
+  <div class="bg-[#C73E00] text-white">
+    <div class="max-w-[1200px] mx-auto px-4 py-7 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <a
+          href="/receitas"
+          class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 inline-flex items-center justify-center text-white transition-colors"
+          aria-label="Explorar catálogo de receitas"
+          title="Explorar catálogo"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </a>
+        <a
+          href="/favoritas"
+          class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 inline-flex items-center justify-center text-white transition-colors"
+          aria-label="Minhas receitas favoritas"
+          title="Favoritas"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </a>
+        <a
+          href="/nova-receita"
+          class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 inline-flex items-center justify-center text-white transition-colors"
+          aria-label="Criar nova receita Markdown"
+          title="Nova receita (.md)"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </a>
+      </div>
+
+      <a href="/" class="flex items-center gap-3 text-white no-underline">
+        <span class="w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+          <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M18 28C18 20.268 24.268 14 32 14C39.732 14 46 20.268 46 28H18Z" fill="#FF8F1C" />
+            <path d="M23 33C23 31.895 23.895 31 25 31H39C40.105 31 41 31.895 41 33V44C41 46.761 38.761 49 36 49H28C25.239 49 23 46.761 23 44V33Z" fill="#CE5032" />
+            <circle cx="32" cy="11" r="4" fill="#FDDA25" />
+          </svg>
+        </span>
+        <span class="text-xl font-bold tracking-tight">Minha Receita</span>
+      </a>
+
+      <a
+        href="/nova-receita"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#B03D1F] hover:bg-[#FAF5F3] text-sm font-bold transition-colors no-underline"
+      >
+        + Criar receita .md
+      </a>
+    </div>
+  </div>
+
+  <!-- Faixa Inferior Branca -->
+  <div class="bg-white py-10">
+    <div class="max-w-[1200px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-[328px_1fr] gap-8 lg:gap-14 items-start">
+      <!-- Bloco Editorial de Destaque (.footer__alert) -->
+      <aside class="footer__alert bg-[#C73E00] text-white p-7 rounded-2xl rounded-tr-[56px] shadow-sm flex flex-col gap-4">
+        <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FDDA25]">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" />
+            <path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <span>Zero Banco de Dados</span>
+        </div>
+        <h2 class="text-lg leading-6 font-bold text-white m-0">
+          Seu acervo culinário em arquivos Markdown
+        </h2>
+        <p class="text-sm leading-5 text-white/95 m-0">
+          Todas as receitas ficam salvas na pasta <code class="bg-black/20 px-1.5 py-0.5 rounded text-xs font-mono">receitas/</code> como arquivos <code class="bg-black/20 px-1.5 py-0.5 rounded text-xs font-mono">.md</code>. Edite manualmente ou peça novas receitas direto pelo chat do Antigravity.
+        </p>
+        <a
+          href="/nova-receita"
+          class="inline-flex items-center justify-center px-4 py-2.5 rounded-full bg-white text-[#B03D1F] hover:bg-[#FAF5F3] text-sm font-bold transition-colors no-underline w-fit"
+        >
+          Como criar receitas
+        </a>
+      </aside>
+
+      <!-- Colunas de Navegação -->
+      <div class="footer__nav grid grid-cols-2 sm:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-sm font-bold text-[#C73E00] mb-3">Carnes & Peixes</h3>
+          <ul class="list-none m-0 p-0 grid gap-2 text-sm">
+            {OFFICIAL_CATEGORIES.slice(0, 5).map((cat) => (
+              <li>
+                <a href={`/categoria/${cat.slug}`} class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">
+                  {cat.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-[#C73E00] mb-3">Mais Sabores</h3>
+          <ul class="list-none m-0 p-0 grid gap-2 text-sm">
+            {OFFICIAL_CATEGORIES.slice(5).map((cat) => (
+              <li>
+                <a href={`/categoria/${cat.slug}`} class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">
+                  {cat.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-[#C73E00] mb-3">Explorar</h3>
+          <ul class="list-none m-0 p-0 grid gap-2 text-sm">
+            <li><a href="/" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Página inicial</a></li>
+            <li><a href="/receitas" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Todas as receitas</a></li>
+            <li><a href="/favoritas" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Receitas favoritas</a></li>
+            <li><a href="/busca" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Busca avançada</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-[#C73E00] mb-3">Gerenciar (.md)</h3>
+          <ul class="list-none m-0 p-0 grid gap-2 text-sm">
+            <li><a href="/nova-receita" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Gerador de Markdown</a></li>
+            <li><a href="/nova-receita#antigravity" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Criar pelo Antigravity</a></li>
+            <li><a href="/api/receitas.json" class="text-[#1F1F1F] hover:text-[#B03D1F] no-underline transition-colors">Índice JSON estático</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-[1200px] mx-auto px-4 mt-8 pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6B7280]">
+      <p class="m-0">
+        Minha Receita — Construído com Astro &amp; Markdown Content Collections.
+      </p>
+      <p class="m-0">
+        Pasta das receitas: <code class="font-mono text-[#1F1F1F]">receitas/*.md</code>
+      </p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,398 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { OFFICIAL_CATEGORIES } from '../../lib/categories';
+import { getAllRecipes } from '../../lib/recipes';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const allRecipes = await getAllRecipes();
+  return paginate(allRecipes, { pageSize: 9 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const recipes = page.data;
+const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
+---
+
+<BaseLayout
+  title={`Todas as Receitas${page.currentPage > 1 ? ` — Página ${page.currentPage}` : ''} | Minha Receita`}
+  description="Explore todas as receitas cadastradas em Markdown, filtre por categoria, tempo de preparo ou favoritas."
+>
+  <div class="max-w-[1024px] mx-auto px-4 sm:px-6 pt-4">
+    <Breadcrumb
+      items={[
+        { label: 'Início', href: '/' },
+        { label: 'Todas as Receitas' },
+      ]}
+    />
+
+    <header class="mt-2 mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="mr-display-h1 m-0">Todas as Receitas</h1>
+        <p class="text-sm sm:text-base text-[#666666] mt-2 mb-0" id="mr-catalog-count">
+          Mostrando {recipes.length} de {page.total} receitas da coleção local
+        </p>
+      </div>
+      <a href="/nova-receita" class="mr-btn-pill">
+        + Nova receita (.md)
+      </a>
+    </header>
+
+    <!-- Barra de Filtros e Ordenação (DESIGN SYSTEM §7.5) -->
+    <section
+      id="mr-filter-bar"
+      aria-label="Filtros e ordenação de receitas"
+      class="bg-[#FAF5F3] border border-[#FAA96B]/40 rounded-2xl p-4 sm:p-5 mb-8"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto] gap-4 items-end">
+        <div>
+          <label for="mr-filter-category" class="mr-label">Categoria</label>
+          <select id="mr-filter-category" class="mr-select bg-white">
+            <option value="all">Todas as categorias</option>
+            {OFFICIAL_CATEGORIES.map((cat) => (
+              <option value={cat.slug}>{cat.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label for="mr-sort-select" class="mr-label">Ordenar por</label>
+          <select id="mr-sort-select" class="mr-select bg-white min-w-[200px]">
+            <option value="recent">Mais recentes</option>
+            <option value="fastest">Menor tempo</option>
+            <option value="az">Ordem alfabética (A–Z)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center">
+          <button
+            id="mr-filter-fav-toggle"
+            type="button"
+            aria-pressed="false"
+            class="h-11 px-4 rounded-full border border-[#B03D1F] bg-white text-[#B03D1F] text-sm font-bold inline-flex items-center gap-2 hover:bg-[#FAF5F3] transition-colors cursor-pointer whitespace-nowrap"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+            <span>Apenas favoritas</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chips de Tempo de Preparo -->
+      <div class="mt-4 pt-4 border-t border-[#FAA96B]/30 flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por tempo de preparo">
+        <span class="text-xs font-bold uppercase tracking-wide text-[#503C3C] mr-1">
+          Tempo:
+        </span>
+        {[
+          { value: 'all', label: 'Todos' },
+          { value: '30', label: 'Até 30 min' },
+          { value: '60', label: '30 a 60 min' },
+          { value: '60plus', label: 'Mais de 60 min' },
+        ].map((chip, idx) => (
+          <button
+            type="button"
+            data-time-chip={chip.value}
+            aria-pressed={idx === 0 ? 'true' : 'false'}
+            class:list={[
+              'mr-time-chip h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer',
+              idx === 0
+                ? 'bg-[#B03D1F] text-white border border-[#B03D1F]'
+                : 'bg-white text-[#374151] border border-[#E5E7EB] hover:border-[#9CA3AF]',
+            ]}
+          >
+            {chip.label}
+          </button>
+        ))}
+
+        <button
+          id="mr-clear-filters-btn"
+          type="button"
+          class="hidden ml-auto h-10 px-3 text-sm font-bold text-[#B03D1F] hover:underline cursor-pointer bg-transparent border-0"
+        >
+          Limpar filtros
+        </button>
+      </div>
+    </section>
+
+    <!-- Grid SSR padrão -->
+    <div id="mr-ssr-grid-wrap">
+      {recipes.length > 0 ? (
+        <div class="receitas-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {recipes.map((recipe) => (
+            <RecipeCard recipe={recipe} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="Nenhuma receita cadastrada ainda"
+          description="Adicione um arquivo .md na pasta receitas/ ou use o construtor visual para começar."
+          ctaLabel="Criar primeira receita"
+          ctaHref="/nova-receita"
+        />
+      )}
+
+      {page.lastPage > 1 && (
+        <nav aria-label="Paginação de receitas" class="mt-10 flex flex-wrap items-center justify-center gap-2">
+          <a
+            href={page.url.prev ?? '#'}
+            class:list={['page-numbers', !page.url.prev && 'disabled']}
+            aria-label="Página anterior"
+            aria-disabled={!page.url.prev ? 'true' : undefined}
+          >
+            ❮
+          </a>
+          {pageNumbers.map((num) => {
+            const href = num === 1 ? '/receitas' : `/receitas/${num}`;
+            const isCurrent = num === page.currentPage;
+            return (
+              <a
+                href={href}
+                class:list={['page-numbers', isCurrent && 'current']}
+                aria-current={isCurrent ? 'page' : undefined}
+              >
+                {num}
+              </a>
+            );
+          })}
+          <a
+            href={page.url.next ?? '#'}
+            class:list={['page-numbers', !page.url.next && 'disabled']}
+            aria-label="Próxima página"
+            aria-disabled={!page.url.next ? 'true' : undefined}
+          >
+            ❯
+          </a>
+        </nav>
+      )}
+    </div>
+
+    <!-- Skeleton durante filtragem dinâmica -->
+    <div id="mr-filter-skeleton" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-hidden="true">
+      {[1, 2, 3].map(() => (
+        <div class="flex flex-col">
+          <div class="mr-skeleton w-full aspect-[3/2] rounded-lg"></div>
+          <div class="mr-skeleton w-20 h-3 rounded mt-4"></div>
+          <div class="mr-skeleton w-full h-[18px] rounded mt-2"></div>
+          <div class="mr-skeleton w-3/4 h-[18px] rounded mt-2"></div>
+          <div class="border-t border-[#F3F4F6] mt-4 pt-3">
+            <div class="mr-skeleton w-28 h-3 rounded"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Grid dinâmico quando filtros estão ativos -->
+    <div id="mr-dynamic-grid" class="hidden receitas-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- Empty state quando filtros não encontram nada -->
+    <div id="mr-filter-empty" class="hidden">
+      <div class="max-w-[480px] mx-auto py-12 px-6 text-center">
+        <div class="w-20 h-20 rounded-full bg-[#FAF5F3] mx-auto flex items-center justify-center mb-5 border border-[#FAA96B]/40">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="text-[#CE5032]">
+            <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M8.5 11h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <p class="text-[20px] leading-7 font-bold text-[#1F1F1F] mb-2">
+          Nenhuma receita combina com esses filtros
+        </p>
+        <p class="text-sm leading-5 text-[#666666] mb-6">
+          Experimente ampliar o tempo de preparo ou limpar a seleção de categoria.
+        </p>
+        <button id="mr-empty-reset-btn" type="button" class="mr-btn-pill">
+          Limpar filtros
+        </button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { getFavoriteIds, syncFavoriteUI } from '../../scripts/favorites';
+  import { loadSearchRecipes, type SearchRecipeItem } from '../../scripts/search';
+
+  const catSelect = document.getElementById('mr-filter-category') as HTMLSelectElement | null;
+  const sortSelect = document.getElementById('mr-sort-select') as HTMLSelectElement | null;
+  const favToggle = document.getElementById('mr-filter-fav-toggle') as HTMLButtonElement | null;
+  const timeChips = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-time-chip]'));
+  const clearBtn = document.getElementById('mr-clear-filters-btn') as HTMLButtonElement | null;
+  const emptyResetBtn = document.getElementById('mr-empty-reset-btn') as HTMLButtonElement | null;
+
+  const ssrWrap = document.getElementById('mr-ssr-grid-wrap');
+  const skeletonWrap = document.getElementById('mr-filter-skeleton');
+  const dynamicGrid = document.getElementById('mr-dynamic-grid');
+  const emptyWrap = document.getElementById('mr-filter-empty');
+  const countLabel = document.getElementById('mr-catalog-count');
+
+  const initialCountText = countLabel?.textContent ?? '';
+
+  let selectedTime = 'all';
+  let onlyFavorites = false;
+
+  const escapeHtml = (str: string) =>
+    str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const renderCardHtml = (recipe: SearchRecipeItem) => {
+    const meta = [recipe.porcoes, recipe.tempoPreparo].filter(Boolean).join(' • ');
+    return `
+      <article class="small-card receita-item flex flex-col rounded-lg bg-white group">
+        <div class="relative rounded-lg overflow-hidden aspect-[3/2] bg-[#F3F4F6]">
+          <a href="${escapeHtml(recipe.url)}" class="block w-full h-full">
+            <img src="${escapeHtml(recipe.imagem)}" alt="${escapeHtml(recipe.titulo)}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
+          </a>
+          <button
+            type="button"
+            class="emr-favorite-btn absolute top-3 right-3 z-[10]"
+            data-recipe-id="${escapeHtml(recipe.id)}"
+            data-recipe-title="${escapeHtml(recipe.titulo)}"
+            aria-pressed="false"
+            aria-label="Favoritar ${escapeHtml(recipe.titulo)}"
+          >
+            <svg width="25" height="25" viewBox="0 0 512 512" fill="none" aria-hidden="true">
+              <path class="mr-heart-path" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z" />
+            </svg>
+          </button>
+        </div>
+        <div class="py-4 flex-1 flex flex-col">
+          <a href="/categoria/${escapeHtml(recipe.categoriaSlug)}" class="inline-block w-fit text-xs leading-4 font-bold uppercase tracking-[0.025em] text-[#B03D1F] hover:text-[#963218] transition-colors no-underline">
+            ${escapeHtml(recipe.categoriaLabel)}
+          </a>
+          <h3 class="recipe-title mt-1.5 mb-0 text-[18px] leading-7 font-bold text-[#666666] group-hover:text-[#1F1F1F] transition-colors line-clamp-3">
+            <a href="${escapeHtml(recipe.url)}" class="text-inherit no-underline">${escapeHtml(recipe.titulo)}</a>
+          </h3>
+          ${meta ? `<div class="recipe-meta mt-auto pt-3 border-t border-[#F3F4F6] text-xs leading-4 font-bold text-[#6B7280]">${escapeHtml(meta)}</div>` : ''}
+        </div>
+      </article>
+    `;
+  };
+
+  const applyFilters = async () => {
+    const category = catSelect?.value ?? 'all';
+    const sort = sortSelect?.value ?? 'recent';
+    const hasCustomFilter =
+      category !== 'all' || selectedTime !== 'all' || onlyFavorites || sort !== 'recent';
+
+    clearBtn?.classList.toggle('hidden', !hasCustomFilter);
+
+    if (!hasCustomFilter) {
+      skeletonWrap?.classList.add('hidden');
+      dynamicGrid?.classList.add('hidden');
+      emptyWrap?.classList.add('hidden');
+      ssrWrap?.classList.remove('hidden');
+      if (countLabel) countLabel.textContent = initialCountText;
+      return;
+    }
+
+    ssrWrap?.classList.add('hidden');
+    emptyWrap?.classList.add('hidden');
+    dynamicGrid?.classList.add('hidden');
+    skeletonWrap?.classList.remove('hidden');
+
+    const all = await loadSearchRecipes();
+    const favSet = new Set(getFavoriteIds());
+
+    let filtered = all.filter((item) => {
+      if (category !== 'all' && item.categoriaSlug !== category) return false;
+      if (onlyFavorites && !favSet.has(item.id)) return false;
+
+      if (selectedTime !== 'all') {
+        const mins = item.tempoMinutos;
+        if (mins === null) return false;
+        if (selectedTime === '30' && mins > 30) return false;
+        if (selectedTime === '60' && (mins <= 30 || mins > 60)) return false;
+        if (selectedTime === '60plus' && mins <= 60) return false;
+      }
+      return true;
+    });
+
+    if (sort === 'fastest') {
+      filtered = [...filtered].sort((a, b) => (a.tempoMinutos ?? 9999) - (b.tempoMinutos ?? 9999));
+    } else if (sort === 'az') {
+      filtered = [...filtered].sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
+    }
+
+    skeletonWrap?.classList.add('hidden');
+
+    if (countLabel) {
+      countLabel.textContent = `${filtered.length} ${filtered.length === 1 ? 'receita encontrada' : 'receitas encontradas'} com os filtros aplicados`;
+    }
+
+    if (filtered.length === 0) {
+      dynamicGrid?.classList.add('hidden');
+      emptyWrap?.classList.remove('hidden');
+      return;
+    }
+
+    if (dynamicGrid) {
+      dynamicGrid.innerHTML = filtered.map(renderCardHtml).join('');
+      dynamicGrid.classList.remove('hidden');
+      syncFavoriteUI();
+    }
+  };
+
+  const resetAllFilters = () => {
+    if (catSelect) catSelect.value = 'all';
+    if (sortSelect) sortSelect.value = 'recent';
+    selectedTime = 'all';
+    onlyFavorites = false;
+
+    favToggle?.setAttribute('aria-pressed', 'false');
+    favToggle?.classList.remove('bg-[#B03D1F]', 'text-white');
+    favToggle?.classList.add('bg-white', 'text-[#B03D1F]');
+
+    timeChips.forEach((c) => {
+      const isAll = c.dataset.timeChip === 'all';
+      c.setAttribute('aria-pressed', String(isAll));
+      c.className = isAll
+        ? 'mr-time-chip h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer bg-[#B03D1F] text-white border border-[#B03D1F]'
+        : 'mr-time-chip h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer bg-white text-[#374151] border border-[#E5E7EB] hover:border-[#9CA3AF]';
+    });
+
+    void applyFilters();
+  };
+
+  catSelect?.addEventListener('change', () => void applyFilters());
+  sortSelect?.addEventListener('change', () => void applyFilters());
+
+  favToggle?.addEventListener('click', () => {
+    onlyFavorites = !onlyFavorites;
+    favToggle.setAttribute('aria-pressed', String(onlyFavorites));
+    favToggle.classList.toggle('bg-[#B03D1F]', onlyFavorites);
+    favToggle.classList.toggle('text-white', onlyFavorites);
+    favToggle.classList.toggle('bg-white', !onlyFavorites);
+    favToggle.classList.toggle('text-[#B03D1F]', !onlyFavorites);
+    void applyFilters();
+  });
+
+  timeChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      selectedTime = chip.dataset.timeChip ?? 'all';
+      timeChips.forEach((c) => {
+        const active = c === chip;
+        c.setAttribute('aria-pressed', String(active));
+        c.className = active
+          ? 'mr-time-chip h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer bg-[#B03D1F] text-white border border-[#B03D1F]'
+          : 'mr-time-chip h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer bg-white text-[#374151] border border-[#E5E7EB] hover:border-[#9CA3AF]';
+      });
+      void applyFilters();
+    });
+  });
+
+  clearBtn?.addEventListener('click', resetAllFilters);
+  emptyResetBtn?.addEventListener('click', resetAllFilters);
+  document.addEventListener('mr:favorites-changed', () => {
+    if (onlyFavorites) void applyFilters();
+  });
+</script>

@@ -1,0 +1,57 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ToastContainer from '../components/ToastContainer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'Minha Receita — Aplicativo editorial de receitas em Astro alimentado diretamente por arquivos Markdown.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <Font cssVariable="--font-outfit" preload />
+  </head>
+  <body>
+    <a
+      href="#conteudo-principal"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[10001] focus:px-4 focus:py-2 focus:rounded-full focus:bg-white focus:text-[#B03D1F] focus:font-bold focus:shadow-lg"
+    >
+      Pular para o conteúdo principal
+    </a>
+
+    <Header />
+
+    <main id="conteudo-principal">
+      <slot />
+    </main>
+
+    <Footer />
+    <ToastContainer />
+
+    <script>
+      import { initToastBridge } from '../scripts/toast';
+      import { initFavorites } from '../scripts/favorites';
+      import { initHeaderSearch } from '../scripts/search';
+
+      initToastBridge();
+      initFavorites();
+      initHeaderSearch();
+    </script>
+  </body>
+</html>
